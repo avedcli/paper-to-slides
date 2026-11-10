@@ -1,0 +1,18 @@
+# 打包产物：走 GitHub Releases，不进仓库
+dist/
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Office / 临时文件
+~$*
+*.tmp
+.DS_Store
+Thumbs.db
+
+# 本地跑 demo 的中间产物
+demo/out/
+*.log

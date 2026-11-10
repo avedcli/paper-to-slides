@@ -1,0 +1,11 @@
+# 统一换行，避免 Win/mac/Linux 协作时整文件 diff
+* text=auto eol=lf
+
+*.pptx binary
+*.png binary
+*.jpg binary
+*.zip binary
+*.pdf binary
+
+# 脚本保持可执行位
+*.py text eol=lf
