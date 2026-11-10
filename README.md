@@ -522,6 +522,7 @@ paper-to-slides/
 ├── SKILL.md                    ← 主入口：四步决策顺序 + 阶段 0–5 + 双重验收
 ├── INSTALL.md                  ← 新项目接入指南
 ├── README.md                   ← 本文件
+├── LICENSE                     ← MIT
 ├── assets/
 │   ├── README.md               ← 模板放置规范 + 自检清单
 │   ├── template.pptx           ← （可选）项目自有模板，放这里优先用
@@ -593,3 +594,12 @@ paper-to-slides/
   排不满 50% 就接受并注明——为凑数字删必需证据，代价远大于版面数字。
 - **文案不用装饰性符号**。人类做 PPT 时几乎不敲 `·`，一出现就暴露是机器生成——
   所以这条被做成了脚本门禁，而不是只写在文档里。
+
+---
+
+## 8. 许可证
+
+[MIT](LICENSE)。可自由使用、修改、再分发，包括商用；保留版权声明即可。
+
+当前版本 **v10.5**。变更历史见 [Releases](https://github.com/avedcli/paper-to-slides/releases)。
+

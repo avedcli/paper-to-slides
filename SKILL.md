@@ -2,6 +2,8 @@
 name: paper-to-slides
 description: 学术文献转英文汇报 PPT 的全链路技能。当用户提供文献 PDF，需要制作学术汇报、组会报告或 journal club 幻灯片时使用。输入为文献 PDF + 设计要求 + 固定模板 assets/template.pptx。先精读登记并做论文级论证审查（结论分级、主张—证据矩阵、替代解释、结论边界），再生成结构化大纲（封面、按需的作者页、Introduction、Method、Results、Discussion，以科学问题为骨架，子图逐张审查、按证据上页、按小问题分页），经用户确认后基于模板生成完整英文汇报 PPTX，按需附配套讲稿。触发词：文献汇报、论文转PPT、journal club、组会汇报、paper presentation、帮我把这篇文献做成PPT、读文献做slides。
 agent_created: true
+version: 10.5.0
+license: MIT
 ---
 
 # paper-to-slides — 学术文献转英文汇报 PPT
