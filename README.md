@@ -170,10 +170,13 @@ Key Innovations 每条补一句 **why high-impact**（把什么从"做不到"变
 
 | 级别 | 角色 | pt |
 |------|------|----|
-| **L1** | 页面标题 / 唯一主张 | **26** |
-| **L2** | 次级标题 / 分组标题 | **22** |
-| **L3** | 正文条目 | **20** |
+| **L1** | 页面标题 / 唯一主张 | **28** |
+| **L2** | 次级标题 / 分组标题 | **26** |
+| **L3** | 正文条目 | **24** |
 | **L4** | 子项 / 限定语（括注、`n=3`）；图注 / 引用 / 出处 | **16** |
+
+> **三档字号只差 2pt，层级靠字重 + 颜色**：L1/L2 加粗（L2 用强调蓝 `#1E40AF`），
+> L3/L4 不加粗（L4 用次要灰 `#64748B`）。详见 `typography-spec.md` §1.1。
 
 判定流程（**命中即止**，顺序判定而非按大小猜）：
 
@@ -255,7 +258,7 @@ Fig. 5b  KLRG1+ ILC2s expand five-fold after IMQ
 
 新出现的基因、蛋白、细胞类型、组织器官、模式生物，第一次出现就在**页底图注带**写一行
 ≤10 词说明（`Lgr5: intestinal stem-cell marker`）——**这条每页都可以有，不设频率上限**。
-**不写成正文句中的括注**：正文框一框一号，20pt + 16pt 括注同框即混字号违规。
+**不写成正文句中的括注**：正文框一框一号，24pt + 16pt 括注同框即混字号违规。
 关键试剂/技术在本页推理里是必需一环时，才给 ≤12 词原理（`DREADD (hM4Di): CNO silences neurons via Gi`）；
 **补充行（瓶颈 / 试剂原理）按需**——只在"不写会让听众读错图、或把结论判高"时才写，
 复述正文、复述图上已画清的、解释常识的一律删（SKILL.md 3.6 的三类冗余）。
@@ -425,7 +428,7 @@ python scripts/normalize_template.py my_template.pptx --dry-run   # 只看报告
 ### 4.5 改字号阶梯
 
 ```bash
-python scripts/verify_deck.py deck.pptx --tiers "26,22,20,16" --max-tiers-per-page 3
+python scripts/verify_deck.py deck.pptx --tiers "28,26,24,16" --max-tiers-per-page 3
 ```
 
 - `--tiers` — 4 档 **pt** 值（降序），想整体放大/缩小就改这一串（**单位是 pt，不是 px**）
@@ -602,5 +605,5 @@ paper-to-slides/
 
 [MIT](LICENSE)。可自由使用、修改、再分发，包括商用；保留版权声明即可。
 
-当前版本 **v10.6**。变更历史见 [Releases](https://github.com/avedcli/paper-to-slides/releases)。
+当前版本 **v10.7**。变更历史见 [Releases](https://github.com/avedcli/paper-to-slides/releases)。
 

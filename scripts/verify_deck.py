@@ -24,7 +24,7 @@ regenerated after an edit. This script checks:
      defect, and it must never be "fixed" by dropping or splitting evidence.
   4. per page: body word count (title and "scaffold" text excluded)
   5. Type scale: content-page text must sit on the 3-step ladder defined in
-     `references/typography-spec.md` (26 / 22 / 20 / 16 pt — page title / group
+     `references/typography-spec.md` (28 / 26 / 24 / 16 pt — page title / group
      heading / body bullet / sub-item-caption, the last being the hard floor).
      Anything below 16 pt,
      any off-ladder size, pages with more than `--max-tiers-per-page` distinct
@@ -82,7 +82,7 @@ ELEMENTS = ("innovations", "findings", "limitations", "future")
 # in pt and needs no px conversion. Four tiers only:
 # L1 = 26 page title, L2 = 22 group heading, L3 = 20 body bullet,
 # L4 = 16 caption / footnote / sub-item (the floor).
-DEFAULT_TIERS_PT = (26.0, 22.0, 20.0, 16.0)
+DEFAULT_TIERS_PT = (28.0, 26.0, 24.0, 16.0)
 TIER_ROLE = {
     1: "page title / section title",
     2: "group heading / module-block title",
@@ -146,7 +146,7 @@ def template_sizes_pt(profile, min_pt, content_layout):
 
     The content-page title, for instance, is a template decision and may sit
     off the content ladder — but the generator is allowed to keep it (on the
-    bundled master it is 26 pt, which happens to be L1 exactly). Only the
+    bundled master it is 28 pt, which happens to be L1 exactly). Only the
     content layout is consulted: sizes that belong to the cover / section pages
     must not leak in as a loophole for content pages.
     """
@@ -227,7 +227,7 @@ def type_scale_check(prs, exempt, ladder_pt, max_tiers, legal_extra, scaffold_y)
             if pt in legal:
                 # A size used *only* by the title placeholder is the template's
                 # decision, not one of the generator's tiers: the bundled
-                # master's 26 pt title happens to equal L1, and counting it
+                # master's 28 pt title happens to equal L1, and counting it
                 # would spend one of the three tiers on the template.
                 if pt in body_used:
                     tiers.add(level_of[pt])

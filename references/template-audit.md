@@ -11,7 +11,7 @@
 | OOXML 长度 | 1 in = 914400 EMU；1 pt = 12700 EMU |
 | 字号 | `a:defRPr/@sz` 单位为 1/100 pt（`sz="2600"` = 26pt） |
 | 设计稿 px ↔ pt | 96dpi 下 `pt = px × 0.75`（25px = 18.75pt，16px = 12pt，15px = 11.25pt） |
-| 内容文字档位 | 本 skill 用 4 档：**26 / 22 / 20 / 16 pt（16pt 为下限）**，见 `typography-spec.md` |
+| 内容文字档位 | 本 skill 用 4 档：**28 / 26 / 24 / 16 pt（16pt 为下限）**，见 `typography-spec.md` |
 | px ↔ in | `in = px / 96`（56px = 0.583in） |
 
 ## 二、判据表
