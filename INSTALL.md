@@ -231,9 +231,19 @@ python .workbuddy/skills/paper-to-slides/scripts/verify_deck.py output/deck.pptx
 - **派生几何不变**：L4 仍是 16pt，所以图注带 0.45/0.72/0.99 in、图题 0.33/0.60 in、
   图内舒适线 21.33 px 全部不动。这是本版相对 v10.6 唯一"没动"的一组数——**因为只有 L1–L3 变了**。
 - **版式后果**：L3 由 20 → 24pt，正文字高 +20%（一行 0.339 → 0.407 in）。
-  原本 30 词满配就贴边的页会开始溢出；SKILL 里那套"实测版式参数"示例已同步重算
-  （bullets `y` 6.08 → 6.00、`h` 0.74 → 0.82，2 行 = 0.81 in），但**该示例是按算术重算的，
-  尚未在真实页面上重新实测**——首次使用时请以 `measure_deck.py` 的实测结果为准。
+  原本 30 词满配就贴边的页会开始溢出。
+- **单页 demo 已按新阶梯重出**：`demo/slide-demo-v107.pptx` / `.png`（工作区产物，不入安装包）。
+  这一页是从**空模板**新建的，不是拿旧 demo 改字号，所以标题是真正继承模板的 28pt 加粗
+  ——`build_demo_v107.py` 里断言 `run.font.size is None`，模板一旦回退就当场报错。
+  实测：正文区 4.75 × 5.61 in 装下 3 条 24pt 要点（合计 1.42 in，含 0.10 间距）+ 2.20 in
+  主张块，无溢出；`verify_deck` 报 `L2+L3+L4`、每框一号、`slidenum_field=1`、图注带 1 行
+  且 0 条补充行。**这页同时验证了本版最担心的那处相邻**：26pt 粗体强调蓝小标题压在
+  24pt 常规墨黑正文之上，只差 2pt，光看字号确实分不开，字重 + 颜色一到位就分开了。
+- **模板陷阱（已写进 demo 脚本注释）**：python-pptx 的 `add_slide` **不会**克隆
+  date / footer / slide-number 占位符，`<a:fld type="slidenum">` 也只存在于版式、
+  不在 slide 上。所以从模板新建的页**默认没有页码**，`verify_deck` 会报
+  `slidenum_field=0`。必须自己建一个文本框、塞入 `a:fld`（`demo/build_demo_v107.py`
+  第 7 段是可直接抄的实现）。
 - 同步改到的文件：`typography-spec.md`、`SKILL.md`、`README.md`、`outline-spec.md`、
   `layout-spec.md`、`figure-and-author.md`、`template-audit.md`、`assets/README.md`、
   `verify_deck.py`。
