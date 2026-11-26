@@ -931,11 +931,18 @@ A 类名词注释行**不计入这个比例**，每页都有也不报警。
              f'id="{{{uuid.uuid4()}}}" type="slidenum">'
              f'<a:rPr lang="en-US" sz="{int(pt*100)}" dirty="0">'
              '<a:solidFill><a:srgbClr val="64748B"/></a:solidFill></a:rPr>'
-             '<a:t>#</a:t></a:fld>')
+             f'<a:t>{page_no}</a:t></a:fld>')   # 当页真实页序，不是固定的 # 或 1
   par._p.append(parse_xml(fld_xml))          # 追加到 a:p，不是追加到某个 run 里面
   ```
   字段 run **不会**出现在 `paragraph.runs` 里（打印文本时看不到 `#`），
   要用 `verify_deck.py` 输出的 `slidenum_field=1` 确认它真的落地。
+- **`<a:t>` 只是缓存值，不是"页码本身"**：PowerPoint 打开文件时会按当前页序重算
+  `slidenum` 字段，所以用户删掉第 2 页、剩下的页在**屏幕上**会自动变成 1/2/3。
+  但文件里存的是写入那一刻的数字，**任何非 PowerPoint 的读取方**（python-pptx、
+  多数转换器、缩略图工具）拿到的都是这个旧值——实测：4 页 deck 删掉第 2 页后，
+  文件里的缓存是 `1, 3, 4`。所以两条纪律：①写入时给当页**真实页序**，别硬编码
+  `1` 或 `#`；②生成之后再调页序（增删、重排、合并 deck）就必然留下错号，
+  要么事后重写缓存，要么在 PowerPoint 里打开另存一次让它重算。
 - **生成器**：优先调用 tencent-pptx skill（生成专业 PPTX、可参考模板视觉风格）；
   若其不可用，则用 python-pptx 直接在模板副本上逐页填充。
 - 子图按 `layout.json` 的坐标原样摆放，不做导致遮挡的手工微调。
