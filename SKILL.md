@@ -917,6 +917,11 @@ A 类名词注释行**不计入这个比例**，每页都有也不报警。
     此时每个文本块都必须 `add_textbox` 并在 plan.json 里给显式坐标，**不要**指望占位符。
     这是正常且被支持的状态，不是模板缺陷。
 - **页码**：每张 slide 右下手动插入 `‹#›` 字段型页码 body，**不**依赖母版 `<p:hf sldNum>` 开关（典型模板如本母版默认 `sldNum="0"` 关掉了母版开关）。
+  **为什么必须手动**：`add_slide()` 只克隆内容类占位符——`python-pptx` 的
+  `SlideLayout.iter_cloneable_placeholders()` 里把 `latent_ph_types = (DATE, FOOTER, SLIDE_NUMBER)`
+  明确排除（这类占位符靠"插入页眉页脚"对话框才实例化）；而 `<a:fld type="slidenum">` 本身
+  只存在于 layout 的 `p:txBody` 里，slide 上那半个占位符是**空的**。所以从模板新建的每一页
+  都天生没有页码，`verify_deck.py` 报 `slidenum_field=0`。别去等占位符，直接建文本框写字段。
   插入字段时的**必踩坑**：`<a:fld>` 是 `a:p` 的**直接子元素**、与 `a:r` **平级**，**不能**塞进 `a:r` 里面。
   嵌套写法的 XML 存得下来、PowerPoint 也打得开，但 python-pptx 读 `paragraph.text` 会抛
   `InvalidXmlError: required <a:t> child element not present`，`measure_deck.py` 会直接崩在
