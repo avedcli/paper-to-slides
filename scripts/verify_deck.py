@@ -24,9 +24,9 @@ regenerated after an edit. This script checks:
      defect, and it must never be "fixed" by dropping or splitting evidence.
   4. per page: body word count (title and "scaffold" text excluded)
   5. Type scale: content-page text must sit on the 3-step ladder defined in
-     `references/typography-spec.md` (26 / 22 / 20 / 14 pt — page title / group
+     `references/typography-spec.md` (26 / 22 / 20 / 16 pt — page title / group
      heading / body bullet / sub-item-caption, the last being the hard floor).
-     Anything below 14 pt,
+     Anything below 16 pt,
      any off-ladder size, pages with more than `--max-tiers-per-page` distinct
      tiers, two different sizes inside ONE textbox, and inverted hierarchy all
      fail.
@@ -81,8 +81,8 @@ ELEMENTS = ("innovations", "findings", "limitations", "future")
 # PowerPoint stores `a:rPr/@sz` in 1/100 pt, so the ladder is defined directly
 # in pt and needs no px conversion. Four tiers only:
 # L1 = 26 page title, L2 = 22 group heading, L3 = 20 body bullet,
-# L4 = 14 caption / footnote / sub-item (the floor).
-DEFAULT_TIERS_PT = (26.0, 22.0, 20.0, 14.0)
+# L4 = 16 caption / footnote / sub-item (the floor).
+DEFAULT_TIERS_PT = (26.0, 22.0, 20.0, 16.0)
 TIER_ROLE = {
     1: "page title / section title",
     2: "group heading / module-block title",

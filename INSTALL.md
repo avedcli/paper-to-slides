@@ -35,7 +35,7 @@ unzip paper-to-slides.zip -d .workbuddy/skills/paper-to-slides
 │   ├── layout-spec.md
 │   ├── outline-spec.md
 │   ├── template-audit.md
-│   └── typography-spec.md                     ← ★ 内容文字层级规范（4 档，26/22/20/14 pt）
+│   └── typography-spec.md                     ← ★ 内容文字层级规范（4 档，26/22/20/16 pt）
 └── scripts/
     ├── crop_figure.py
     ├── extract_pdf_assets.py
@@ -144,11 +144,11 @@ python .workbuddy/skills/paper-to-slides/scripts/verify_deck.py output/deck.pptx
 `[type scale]` 段逐页列出用到的字号与对应级别。正常应形如：
 
 ```
-   slide3: 14pt, 20pt, 26pt  -> L1+L3+L4
-   slide8: 11.5pt, 13pt       -> -  FAIL [below 14pt minimum: 11.5pt, 13pt]
+   slide3: 16pt, 20pt, 26pt  -> L1+L3+L4
+   slide8: 11.5pt, 13pt       -> -  FAIL [below 16pt minimum: 11.5pt, 13pt]
 ```
 
-出现 FAIL（小于 14pt / 档外字号 / 单页 >3 级 / 层级倒挂）时，
+出现 FAIL（小于 16pt / 档外字号 / 单页 >3 级 / 层级倒挂）时，
 按 `references/typography-spec.md` 把文字重新定级——**不要**靠调字号去凑版面。
 
 同一份报告里的 `[copy style]` 段检查文案符号：出现 `·` 这类装饰性分隔符会 FAIL，
@@ -179,7 +179,7 @@ python .workbuddy/skills/paper-to-slides/scripts/verify_deck.py output/deck.pptx
 | 子图放不下（`ok: false`）/ 图多到排不下 / 图占比不足 | references/layout-spec.md「五、异常处理」 |
 | 模板审查告警看不懂 | references/template-audit.md 判据表 + 单位换算 + 判读陷阱 |
 | 大纲格式不对 | references/outline-spec.md（含完整结构 + 写法示例 + 常见错误） |
-| 字号不知道用多大 / 出现十几种字号 / 组标题比正文小 | references/typography-spec.md（4 档阶梯 + 层级判定流程 + 14pt 下限） |
+| 字号不知道用多大 / 出现十几种字号 / 组标题比正文小 | references/typography-spec.md（4 档阶梯 + 层级判定流程 + 16pt 下限） |
 | 结论说得太满 / 被问"这能说明因果吗" | references/claim-evidence-spec.md（L1–L4 + Confidence boundary） |
 | 哪些图该上页、哪些留大纲 | references/figure-and-author.md「三级深度」 |
 | 作者简介怎么写 | references/figure-and-author.md「作者调研」节（是否成页见 SKILL.md 3.8） |
@@ -197,7 +197,33 @@ python .workbuddy/skills/paper-to-slides/scripts/verify_deck.py output/deck.pptx
 > 本节按时间倒序记录。**当前生效的数值以上方最新条目为准**；
 > 更早条目里的 20 词 / 28 词是各版本当时的口径，不是现状。
 
-本次打包时间：2026-10-29（**v10.5**）
+本次打包时间：2026-11-26（**v10.6**）
+
+### v10.6 —— 字号地板 14 → 16 pt
+
+**背景**：14pt 是上一版的下界，但它是按"能读"定的，不是按"投影后舒服"定的。
+会议室投影 + 后排听众的组合下，图注、子项这类 L4 内容用 14pt 偏细。
+本版把**最小字号提到 16pt**，四档阶梯变为 **26 / 22 / 20 / 16 pt**。
+
+**改法**：
+
+- **阶梯**：`DEFAULT_TIERS_PT = (26.0, 22.0, 20.0, 16.0)`；`TIER_PT[4] = 16.0`；
+  低于 16pt 判 `below minimum tier`（报错文案随档位自动变）。
+- **派生数值全部联动换算**（这些是从字号推出来的，不改就会自相矛盾）：
+  - 一行高度 `caption_line_in`：0.237 → **0.271 in**（16 × 1.22 / 72）
+  - 图注带 `caption_band_in`：1 行 **0.45** / 2 行 **0.72** / 3 行 **0.99 in**（原 0.42 / 0.66 / 0.90）
+  - 子图图题 `panel_caption_in`：一行 **0.33** / 两行 **0.60 in**（原 0.30 / 0.53）
+  - 图内文字舒适线 `min_text_px` 默认：18.67 → **21.33 px**（`target_text_px` 建议 22）
+  - 阶间比例 20∶16 = 1.25（原 20∶14 = 1.43）
+- **版式后果**：图注带与图题都比原来高约 15%，**图区面积相应变小**。原先按 14pt
+  卡着版本余量排的页，现在会挤或溢出——这是达到"投影可读"的代价，不是 bug。
+  溢出时按 A 档规则处理（削修饰语 / 拆页），**不允许把字号压回 14pt**。
+- **兼容性**：旧 deck 里的 14pt 现在会判 FAIL。要复核旧产物，可显式回溯
+  `--tiers "26,22,20,14"`；要长期保留两套口径不必加参数，重新排一次即可。
+- 同步改到的文件：`typography-spec.md`（阶梯表 / 判定流程 / 判定词表 / 自查清单）、
+  `SKILL.md`（规则优先级总表、排版参数示例、验收清单）、`README.md`（速查表、plan.json 参数表）、
+  `layout-spec.md`、`outline-spec.md`、`figure-and-author.md`、`template-audit.md`、
+  `assets/README.md`、`plan_layout.py`（schema 注释 + 默认值）、`verify_deck.py`。
 
 ### v10.5 —— 作者页标题固定为 `Authors`
 

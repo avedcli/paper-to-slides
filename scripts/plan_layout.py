@@ -11,12 +11,12 @@ Usage:
     python plan_layout.py plan.json [-o layout.json]
 
 plan.json schema (all size fields in inches; slide assumed 96 DPI for the
-text-size check, so the 14 pt content floor = 14/72 in = 18.67 px):
+text-size check, so the 16 pt content floor = 16/72 in = 21.33 px):
 
     {
       "slide_w_in": 13.333, "slide_h_in": 7.5,
       "title_band_in": 0.85,      // reserved title strip on top
-      "caption_band_in": 0,       // caption strip at bottom (L4 = 14pt
+      "caption_band_in": 0,       // caption strip at bottom (L4 = 16pt
                                   //   cap-band). Two kinds of rows live here
                                   //   (SKILL.md 3.6): A) name annotations
                                   //   (`Lgr5: marker`) — written whenever the
@@ -29,9 +29,9 @@ text-size check, so the 14 pt content floor = 14/72 in = 18.67 px):
                                   //   area takes the space back (pages whose
                                   //   terms were all established earlier).
                                   //   SIZE IT BY LINE COUNT, never by taste:
-                                  //   one 14 pt line = 0.237 in + 0.18 in
-                                  //   padding -> 1 line 0.42 / 2 lines 0.66 /
-                                  //   3 lines 0.90 (SKILL.md 3.6). Under-reserving
+                                  //   one 16 pt line = 0.271 in + 0.18 in
+                                  //   padding -> 1 line 0.45 / 2 lines 0.72 /
+                                  //   3 lines 0.99 (SKILL.md 3.6). Under-reserving
                                   //   a line is a silent overflow: PowerPoint does
                                   //   not clip, the extra line lands on the
                                   //   figures or the footer.
@@ -42,7 +42,7 @@ text-size check, so the 14 pt content floor = 14/72 in = 18.67 px):
                                   // area" means for the coverage metric below
       "target_text_px": 20,       // comfort target for on-slide figure text.
                                   //   Ignored when min_text_px <= 0.
-      "min_text_px": 18.67,       // comfort floor = the skill-wide 14 pt
+      "min_text_px": 21.33,       // comfort floor = the skill-wide 16 pt
                                   //   content minimum (L4 in typography-spec.md),
                                   //   expressed in px at 96 dpi. Below it the
                                   //   number is reported as a note only —
@@ -54,13 +54,13 @@ text-size check, so the 14 pt content floor = 14/72 in = 18.67 px):
                                   //   record and must not steer layout choice.
       "panel_caption_in": 0.30,   // OPTIONAL. Height reserved UNDER EACH panel
                                   //   for its own "Fig. 5a  <one-line title>"
-                                  //   row (14 pt). 1 line ~= 0.30, 2 lines ~= 0.53.
+                                  //   row (16 pt). 1 line ~= 0.33, 2 lines ~= 0.60.
                                   //   Omitted / 0 -> legacy behaviour (no reserve).
                                   //   Alternatively give per-panel
                                   //   "caption_lines": 2 and let the script derive
                                   //   it from caption_gap_in + lines*caption_line_in.
       "caption_gap_in": 0.06,     // OPTIONAL. Gap between a panel's bottom edge
-      "caption_line_in": 0.237,   // OPTIONAL. One 14 pt line = 14*1.22/72 in
+      "caption_line_in": 0.271,   // OPTIONAL. One 16 pt line = 16*1.22/72 in
       "body_zone": {              // OPTIONAL. The page's BODY text zone (bullets
         "pos": "left",            //   / module blocks) as a first-class module,
         "in": 3.0                 //   distinct from the caption band pinned to
@@ -141,9 +141,9 @@ Notes:
       omitted, the text-size check is skipped for that panel and a warning is
       emitted.
     - The comfort floor is the same number as the minimum content tier
-      (L4 = 14 pt, i.e. 18.67 px at 96 dpi; see references/typography-spec.md),
+      (L4 = 16 pt, i.e. 21.33 px at 96 dpi; see references/typography-spec.md),
       but the two mean different things: content text is authored by the agent
-      and MUST be >= 14 pt, whereas figure-internal text is a *consequence* of
+      and MUST be >= 16 pt, whereas figure-internal text is a *consequence* of
       the scale above and is only reported. Do not "fix" a small figure text by
       touching the type scale.
     - Panels sharing a "group" are rendered at the same scale so relative
@@ -190,7 +190,7 @@ def content_area(p):
     # caption_band_in is optional: 0 (or absent) = no caption band, so the
     # bottom simply keeps the page margin instead of a band + 0.1 gutter.
     # Note 0 is NOT the default posture: a page that introduces a new term
-    # needs one 14pt line (0.42) for its annotation (SKILL.md 3.6).
+    # needs one 16pt line (0.45) for its annotation (SKILL.md 3.6).
     band = p.get("caption_band_in") or 0
     y1 = p["slide_h_in"] - (band + 0.1 if band > 0 else p["margin_in"])
     return (x0, y0, x1, y1)
@@ -388,7 +388,7 @@ def evaluate(panels, cells, area, gap, target, min_text,
                 penalty += 40
                 warnings.append(
                     f"{p['label']}: text renders at {disp:.0f}px, under the "
-                    f"{min_text:g}px comfort floor (= 14 pt; source text {t}px, "
+                    f"{min_text:g}px comfort floor (= 16 pt; source text {t}px, "
                     f"displayed at {s * 96 * 100:.0f}% of source size). This is "
                     f"already the largest scale the no-overlap limit allows — "
                     f"no action needed.")
@@ -435,9 +435,9 @@ def main():
     p = json.loads(args.plan.read_text(encoding="utf-8"))
     gap = p.get("gap_in", 0.15)
     target = p.get("target_text_px", 20)
-    min_text = p.get("min_text_px", 18.67)   # 14 pt content floor, in px @96dpi
+    min_text = p.get("min_text_px", 21.33)   # 16 pt content floor, in px @96dpi
     cap_gap = float(p.get("caption_gap_in", 0.06))
-    cap_line = float(p.get("caption_line_in", 0.237))   # 14 pt * 1.22 / 72
+    cap_line = float(p.get("caption_line_in", 0.271))   # 16 pt * 1.22 / 72
 
     # Caption reserve under every panel: explicit height wins; otherwise derive
     # it from the longest `caption_lines` requested; otherwise no reserve.
@@ -472,7 +472,7 @@ def main():
     # The layout is chosen FROM THIS PAGE'S CONTENT: panel count (evidence),
     # text volume (body zone or not), and the key/supporting relationship
     # (role / structure). The fixed page furniture — title band, page number,
-    # 14pt caption band, per-panel caption rows — is reserved before any
+    # 16pt caption band, per-panel caption rows — is reserved before any
     # candidate is scored and can never be encroached on.
     structure = p.get("structure")            # "hierarchy" | "parallel" | None
     n_key = sum(1 for sp in panels if sp.get("role") == "key")
@@ -481,12 +481,12 @@ def main():
               "treated as decisive; a page has at most one key evidence.")
 
     # ---- body-text zone (正文区) vs caption band (图注带) ---------------
-    # Two different modules: the 14pt caption band (cap-band, L4) is the
+    # Two different modules: the 16pt caption band (cap-band, L4) is the
     # bottom strip, reserved via caption_band_in — and it is OPTIONAL:
     # caption_band_in = 0 means the page has no band and the figure area
     # takes that height back. When the page does have one, size it by LINE
-    # COUNT (see the schema note at the top: 1 line 0.42 / 2 lines 0.66 /
-    # 3 lines 0.90). The body text (L1-L3
+    # COUNT (see the schema note at the top: 1 line 0.45 / 2 lines 0.72 /
+    # 3 lines 0.99). The body text (L1-L3
     # bullets / module blocks) is a separate, freely placeable module —
     # declare body_zone {pos, in} to reserve it top/bottom/left/right of the
     # figure area. No body_zone -> legacy behaviour (body strip right above
@@ -602,14 +602,14 @@ def main():
               f"x={body_box['x']:.2f} y={body_box['y']:.2f} "
               f"w={body_box['w']:.2f} h={body_box['h']:.2f} "
               f"(place this page's bullets / module blocks there, verbatim; "
-              f"the 14pt caption band below is a separate module — one line "
-              f"(0.42 in) if the page introduces a term, 0.66 / 0.90 if it "
+              f"the 16pt caption band below is a separate module — one line "
+              f"(0.45 in) if the page introduces a term, 0.72 / 0.99 if it "
               f"also carries a bottleneck or reagent line, 0 = no band)")
     if not (p.get("caption_band_in") or 0):
         print("[NOTE] caption_band_in = 0, so no bottom band is reserved. "
               "That is only right if every term on this page was already "
-              "established earlier — a first-mention term needs one 14pt "
-              "annotation line (0.42 in) at the bottom of the page.")
+              "established earlier — a first-mention term needs one 16pt "
+              "annotation line (0.45 in) at the bottom of the page.")
     if cap_in > 0:
         print(f"panel caption reserve: {cap_in:.2f}in under every panel "
               f"(apply cap_x/cap_y/cap_w/cap_h verbatim)")
