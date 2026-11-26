@@ -41,7 +41,8 @@
 | 位置 | **永远页面底部**，由 `caption_band_in` 预留；**一行都没有的页把 `caption_band_in` 设为 0**，图区拿回这段高度 | **自由排版模块**：`body_zone: {pos: top/bottom/left/right, in}` 每页声明；不声明 = 旧行为（正文条紧挨图注带上沿） |
 | 输出 | `cap-band` 文本框，y ≥ scaffold_y，不计正文词数 | `layout.json` 的 `body_box: {x,y,w,h}`，生成时照抄，内部按 typography-spec 的层级与模块块规则自由排 |
 
-**固定模块在任何布局下都不可被侵占（A 档）**：标题带、页码、底部 L4 = 16pt 图注带
+**固定模块在任何布局下都不可被侵占（A 档）**：标题带、页码（几何照抄版式的
+`sldNum` 占位符，见 SKILL.md「页码」条 —— 不要自建一个右下角小盒）、底部 L4 = 16pt 图注带
 （`cap-band`，`caption_band_in > 0` 时才存在）、每张子图自己的图题行（`cap-*`）——
 脚本是先把这一切预留出来再枚举候选，
 所以 `layout.json` 给出的任何坐标（含 `body_box`）都天然不碰它们；生成时照抄坐标即可，

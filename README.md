@@ -605,5 +605,5 @@ paper-to-slides/
 
 [MIT](LICENSE)。可自由使用、修改、再分发，包括商用；保留版权声明即可。
 
-当前版本 **v10.7**。变更历史见 [Releases](https://github.com/avedcli/paper-to-slides/releases)。
+当前版本 **v10.8**。变更历史见 [Releases](https://github.com/avedcli/paper-to-slides/releases)。
 

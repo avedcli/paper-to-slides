@@ -2,7 +2,7 @@
 name: paper-to-slides
 description: 学术文献转英文汇报 PPT 的全链路技能。当用户提供文献 PDF，需要制作学术汇报、组会报告或 journal club 幻灯片时使用。输入为文献 PDF + 设计要求 + 固定模板 assets/template.pptx。先精读登记并做论文级论证审查（结论分级、主张—证据矩阵、替代解释、结论边界），再生成结构化大纲（封面、按需的作者页、Introduction、Method、Results、Discussion，以科学问题为骨架，子图逐张审查、按证据上页、按小问题分页），经用户确认后基于模板生成完整英文汇报 PPTX，按需附配套讲稿。触发词：文献汇报、论文转PPT、journal club、组会汇报、paper presentation、帮我把这篇文献做成PPT、读文献做slides。
 agent_created: true
-version: 10.7.0
+version: 10.8.0
 license: MIT
 ---
 
@@ -846,7 +846,8 @@ A 类名词注释行**不计入这个比例**，每页都有也不报警。
   `title_band_in=1.085` / `caption_band_in=1.40`（图区 y 1.185–6.00）；
   bullets `y=6.00 h=0.82`（L3 24pt、`space_after=0`，2 行 = 0.81 in）；
   图注 `y=6.87 h=0.57`（L4 16pt 两行，**y ≥ scaffold_y 6.85 → 不计入正文词数**）；
-  页码 `y=6.98` 右侧独立小盒。此时规划阶段的 `figure_coverage` 乘以 **0.847** 才是 `verify_deck`
+  页码 `x=10.018 y=6.951 w=3.000 h=0.399`（照抄母版 `sldNum` 占位符，见下文"页码"条）。
+  此时规划阶段的 `figure_coverage` 乘以 **0.847** 才是 `verify_deck`
   的口径（分母 74.90 in²），规划时直接按 `面板面积和 / 74.90` 自算最省事
   （这只是为了把面积做大、避免读数误判，**不是及格线**）；
 - **缩放规则（唯一一条）**：每张子图缩放到**不重叠约束下允许的最大尺寸**即可，到此为止。
@@ -916,7 +917,18 @@ A 类名词注释行**不计入这个比例**，每页都有也不报警。
   - `"textbox"` — 内容版式**只有 title 占位符**（很多学术模板故意这么设计，避免 body 框跟图抢空间），
     此时每个文本块都必须 `add_textbox` 并在 plan.json 里给显式坐标，**不要**指望占位符。
     这是正常且被支持的状态，不是模板缺陷。
-- **页码**：每张 slide 右下手动插入 `‹#›` 字段型页码 body，**不**依赖母版 `<p:hf sldNum>` 开关（典型模板如本母版默认 `sldNum="0"` 关掉了母版开关）。
+- **页码**：每张 slide 手动插入 `‹#›` 字段型页码，**不**依赖母版 `<p:hf sldNum>` 开关（典型模板如本母版默认 `sldNum="0"` 关掉了母版开关）。
+  **位置必须照抄模板，不许自己设计**：读母版 `sldNum` 占位符的 `a:xfrm` 与文本属性，
+  原样复刻到 slide 上的文本框。本母版为 `x=10.018 y=6.951 w=3.000 h=0.399`、
+  段落 `algn="r"`、`anchor="ctr"`、`rIns=0.1` ⇒ 数字实际落在右边界
+  `13.018 − 0.1 = 12.918`，与标题右边缘（12.865）基本齐平。
+  ⚠ **框宽 3.000 是母版的原始值，不是"给数字留的宽度"**。可见的只有右边缘，
+  是右对齐 + 右内边距把它推过去的。若把框缩成刚好裹住数字（例如 0.60 宽、右边界贴到 12.29），
+  数字会跟着内缩约 **0.13 in**——单看那一页毫无异样，跟模板并排一比就露馅。
+  正确做法：`x/y/w/h` 照抄、`algn="r"`、`anchor="ctr"`，**内边距保持默认**
+  （python-pptx 默认 `margin_right=0.1` / `margin_top=0.05`，恰好等于本母版的 `rIns`/`tIns`；
+  清零反而会把数字推到 13.018）。校验：`verify_deck.py` 的 `[page number]` 段拿每页页码框的
+  右/下边界与版式占位符比对，偏差 >0.05 in 报 WARN。
   **为什么必须手动**：`add_slide()` 只克隆内容类占位符——`python-pptx` 的
   `SlideLayout.iter_cloneable_placeholders()` 里把 `latent_ph_types = (DATE, FOOTER, SLIDE_NUMBER)`
   明确排除（这类占位符靠"插入页眉页脚"对话框才实例化）；而 `<a:fld type="slidenum">` 本身
@@ -927,15 +939,25 @@ A 类名词注释行**不计入这个比例**，每页都有也不报警。
   `InvalidXmlError: required <a:t> child element not present`，`measure_deck.py` 会直接崩在
   `sh.text_frame.text.strip()` 上（报错位在 `pptx/oxml/text.py`，极具误导性）。正确写法：
   ```python
+  # 位置照抄版式 sldNum 占位符的几何；内边距不要动（默认值 = 母版的 rIns/tIns）
+  box = slide.shapes.add_textbox(Inches(10.018), Inches(6.951),
+                                 Inches(3.000), Inches(0.399))
+  box.name = "sldnum"
+  box.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE     # 母版 anchor="ctr"
+  par = box.text_frame.paragraphs[0]
+  par.alignment = PP_ALIGN.RIGHT                          # 母版 algn="r"
   fld_xml = ('<a:fld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
              f'id="{{{uuid.uuid4()}}}" type="slidenum">'
-             f'<a:rPr lang="en-US" sz="{int(pt*100)}" dirty="0">'
+             f'<a:rPr lang="en-US" sz="{int(pt*100)}" dirty="0" b="0">'
              '<a:solidFill><a:srgbClr val="64748B"/></a:solidFill></a:rPr>'
              f'<a:t>{page_no}</a:t></a:fld>')   # 当页真实页序，不是固定的 # 或 1
   par._p.append(parse_xml(fld_xml))          # 追加到 a:p，不是追加到某个 run 里面
   ```
   字段 run **不会**出现在 `paragraph.runs` 里（打印文本时看不到 `#`），
   要用 `verify_deck.py` 输出的 `slidenum_field=1` 确认它真的落地。
+  **字号不走模板**：模板占位符是 12pt、主题文字色 75% 亮度，但 `a:fld` 不进
+  `paragraph.runs`，所以档位检查看不见它——页码按 L4（16pt、`#64748B`）写，
+  这样投影下不会明显变细，也不与图注带的末档冲突。
 - **`<a:t>` 只是缓存值，不是"页码本身"**：PowerPoint 打开文件时会按当前页序重算
   `slidenum` 字段，所以用户删掉第 2 页、剩下的页在**屏幕上**会自动变成 1/2/3。
   但文件里存的是写入那一刻的数字，**任何非 PowerPoint 的读取方**（python-pptx、

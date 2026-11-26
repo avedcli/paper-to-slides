@@ -71,6 +71,7 @@ from pathlib import Path
 
 from lxml import etree
 from pptx import Presentation
+from pptx.oxml.ns import qn
 
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
@@ -139,6 +140,34 @@ def figure_area_of(profile, content_layout):
             if fa:
                 return fa["w"] * fa["h"]
     raise SystemExit(f"[ERROR] no figure_area for layout {content_layout!r}")
+
+
+def layout_sldnum_box(prs):
+    """Where the template puts its slide-number placeholder, in inches.
+
+    Returns (right, bottom) of the *box*, or None when the layouts declare no
+    slide-number placeholder. The generator is expected to copy this geometry
+    verbatim instead of inventing a small box in the corner: the box is ~3 in
+    wide and only its right edge is visible (right-aligned text + 0.1 in right
+    inset), so a shrunken "fits the digits" box silently moves the digit
+    inwards by whatever was trimmed off.
+    """
+    for lay in prs.slide_layouts:
+        for ph in lay.placeholders:
+            if ph.placeholder_format.type == 13 and ph.width:
+                return ((ph.left + ph.width) / 914400,
+                        (ph.top + ph.height) / 914400)
+    return None
+
+
+def slidenum_boxes(slide):
+    """Yield (right, bottom) in inches for each shape holding a slidenum field."""
+    for sh in slide.shapes:
+        flds = [f for f in sh._element.iter(qn("a:fld"))
+                if f.get("type") == "slidenum"]
+        if flds:
+            yield ((sh.left + sh.width) / 914400,
+                   (sh.top + sh.height) / 914400)
 
 
 def template_sizes_pt(profile, min_pt, content_layout):
@@ -509,6 +538,7 @@ def main():
     cap_report = []          # (slide, pictures, caption rows) for the diagnostic
     band_pages = []          # (slide, row count) for the bottom `cap-band`
     author_pages = []        # (slide, title text) — author page, fixed title
+    num_boxes = []           # (slide, box right, box bottom) — page-number box
     for i, slide in enumerate(prs.slides, 1):
         fig = body = scaffold = title = 0.0
         pics = caps = 0
@@ -560,6 +590,8 @@ def main():
                        if (p.text or "").strip())
             if rows:
                 band_pages.append((i, rows))
+        for right, bottom in slidenum_boxes(slide):
+            num_boxes.append((i, right, bottom))
         if i not in exempt:
             cap = word_cap.get(i, args.max_body_words)
             fcap = figure_cap.get(i, args.min_figure_pct)
@@ -642,6 +674,45 @@ def main():
             print("      Diagnostic only — not a failure.")
         else:
             print("   -> supplementary rows within the expected share")
+
+    # The page number is the one module whose geometry must NOT be designed by
+    # the generator: the template already declares where it goes (the master's
+    # `sldNum` placeholder). A hand-made "small box in the corner" looks fine on
+    # its own and still lands off the template's position — which shows up the
+    # moment the two files are put side by side. Diagnostic only, never a gate:
+    # a template without a sldNum placeholder has no reference to compare to.
+    ref = layout_sldnum_box(prs)
+    print("\n[page number]  geometry copied from the template's `sldNum` "
+          "placeholder, not invented")
+    if ref is None:
+        print("   the layouts declare no `sldNum` placeholder, so there is no")
+        print("   reference position. Align the digits to the title's right")
+        print("   edge: right-aligned box, same right margin as the title.")
+    elif not num_boxes:
+        print("   no page-number field found on any page — see [pages] above")
+    else:
+        ref_r, ref_b = ref
+        print(f"   template box: right {ref_r:.3f}in / bottom {ref_b:.3f}in")
+        drift = []
+        for num, r, b in num_boxes:
+            ok = abs(r - ref_r) <= 0.05 and abs(b - ref_b) <= 0.05
+            line = (f"   slide{num}: right {r:.3f} / bottom {b:.3f}  "
+                    f"{'OK' if ok else 'WARN'}")
+            if not ok:
+                line += f"  ({r - ref_r:+.2f}in horiz, {b - ref_b:+.2f}in vert)"
+                drift.append(num)
+            print(line)
+        if drift:
+            print("   -> use the template's box, not a shrunken one. The")
+            print("      placeholder is about 3in wide and only its right edge")
+            print("      shows (right-aligned text + 0.1in right inset). Trimming")
+            print("      the box to 'fit the digits' keeps the digit but drags it")
+            print("      inward, so the page stops matching the template. Copy")
+            print("      x/y/w/h verbatim, set algn=r and anchor=ctr, and leave")
+            print("      the insets at their defaults.")
+            print("      Diagnostic only — not a failure.")
+        else:
+            print("   -> every page number sits where the template puts it")
 
     print("\n[authors page]  the author page carries a FIXED title: `Authors` "
           "(SKILL.md 3.8)")
